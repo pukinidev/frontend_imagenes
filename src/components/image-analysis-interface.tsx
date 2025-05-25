@@ -219,35 +219,15 @@ export default function ImageAnalysisInterface() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="text-center p-4 bg-orange-50 rounded-lg border border-orange-200">
-                <Badge variant="destructive" className="mb-2">
-                  SUSPICIOUS
+              <div className="text-center p-4 bg-gray-100 rounded-lg">
+                <Badge variant="secondary" className="mb-2 font-bold">
+                  MELANOMA PROBABILITY
                 </Badge>
-                <p className="text-lg font-semibold text-orange-800">
-                  Possible Melanoma
-                </p>
-                <p className="text-sm text-orange-600 mt-1">
-                  Confidence: 78.3%
+                <p className="text-sm text-gray-700">
+                  <span className="text-gray-900">{analysisResults?.mel}</span>
                 </p>
               </div>
-
-              <div className="space-y-2">
-                <h4 className="font-semibold text-sm text-gray-700">
-                  Risk Assessment
-                </h4>
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>Melanoma Risk:</span>
-                    <span className="font-medium text-red-600">High</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span>Benign Probability:</span>
-                    <span className="font-medium">{analysisResults?.mel}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex gap-1 justify-end">
+              <div className="flex gap-1 justify-center items-center">
                 <Button size="sm" onClick={resetAnalysis}>
                   <RotateCcw className="h-4 w-4 mr-1" />
                   New Analysis
