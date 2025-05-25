@@ -134,9 +134,6 @@ export default function ImageAnalysisInterface() {
                 <p>
                   <strong>File Size:</strong> 2.3 MB
                 </p>
-                <p>
-                  <strong>Format:</strong> JPEG
-                </p>
               </div>
             </CardContent>
           </Card>
@@ -156,9 +153,14 @@ export default function ImageAnalysisInterface() {
                   className="w-full h-full object-cover"
                 />
               </div>
+              <div className="mt-4 space-y-2 justify-center flex items-center">
+                <Button  size="sm">
+                  <Download className="h-4 w-4 mr-2" />
+                  Download Segmentation
+                </Button>
+              </div>
             </CardContent>
           </Card>
-
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -190,7 +192,7 @@ export default function ImageAnalysisInterface() {
               </div>
 
               <div className="flex gap-1 justify-end">
-                <Button size="sm" variant="outline" onClick={resetAnalysis}>
+                <Button size="sm" onClick={resetAnalysis}>
                   <RotateCcw className="h-4 w-4 mr-1" />
                   New Analysis
                 </Button>
