@@ -1,81 +1,137 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
-import { Upload, FileImage, AlertTriangle, Download, RotateCcw } from "lucide-react"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import {
+  Upload,
+  FileImage,
+  AlertTriangle,
+  Download,
+  RotateCcw,
+} from "lucide-react";
+import { UUID } from "crypto";
+
+interface ImageAnalysisResults {
+  segmentation_id: UUID;
+  mel: number;
+}
 
 export default function ImageAnalysisInterface() {
-  const [uploadedImage, setUploadedImage] = useState<string | null>(null)
-  const [isAnalyzing, setIsAnalyzing] = useState(false)
-  const [showResults, setShowResults] = useState(false)
+  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [showResults, setShowResults] = useState(false);
+  const [analysisResults, setAnalysisResults] =
+    useState<ImageAnalysisResults | null>(null);
+  const [segmentationImage, setSegmentationImage] = useState<string | null>(
+    null
+  );
 
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
+  const handleImageUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
     if (file && file.type.startsWith("image/")) {
-      const reader = new FileReader()
+      const formData = new FormData();
+      formData.append("file", file);
+      setIsAnalyzing(true);
+      setShowResults(false);
+      const reader = new FileReader();
       reader.onload = (e) => {
-        const result = e.target?.result as string
+        const result = e.target?.result as string;
         if (result) {
-          setUploadedImage(result)
-          setShowResults(false)
-          // Simulate analysis
-          setIsAnalyzing(true)
-          setTimeout(() => {
-            setIsAnalyzing(false)
-            setShowResults(true)
-          }, 3000)
+          setUploadedImage(result);
         }
+      };
+      reader.readAsDataURL(file);
+      try {
+        const response = await fetch(
+          "https://backend-imagenes-562367180789.us-south1.run.app/images/prediction/",
+          {
+            method: "POST",
+            body: formData,
+          }
+        );
+        if (!response.ok) {
+          throw new Error(`Server responded with ${response.status}`);
+        }
+        const data = await response.json();
+        setAnalysisResults(data);
+        await getImageSegmentation(data.segmentation_id);
+        setIsAnalyzing(false);
+        setShowResults(true);
+      } catch (error) {
+        console.error("Upload failed:", error);
+        setIsAnalyzing(false);
       }
-      reader.readAsDataURL(file)
     }
-  }
+  };
+
+  const getImageSegmentation = async (image_prediction_id: UUID) => {
+    try {
+      const response = await fetch(
+        `https://backend-imagenes-562367180789.us-south1.run.app/images/prediction/${image_prediction_id}?image_prediction_id=${image_prediction_id}`,
+        {
+          method: "GET",
+        }
+      );
+      if (!response.ok) {
+        throw new Error(`Server responded with ${response.status}`);
+      }
+      const blob = await response.blob();
+      const data = URL.createObjectURL(blob);
+      setSegmentationImage(data);
+      return data;
+    } catch (error) {
+      console.error("Failed to fetch segmentation:", error);
+      return null;
+    }
+  };
+
+  const handleDownloadSegmentation = () => {
+    if (segmentationImage) {
+      const link = document.createElement("a");
+      link.href = segmentationImage;
+      link.download = "segmentation_image.png";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
 
   const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault()
-  }
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault()
-    const file = e.dataTransfer.files[0]
-    if (file && file.type.startsWith("image/")) {
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        setUploadedImage(e.target?.result as string)
-        setShowResults(false)
-        setIsAnalyzing(true)
-        setTimeout(() => {
-          setIsAnalyzing(false)
-          setShowResults(true)
-        }, 3000)
-      }
-      reader.readAsDataURL(file)
-    }
-  }
+    e.preventDefault();
+  };
 
   const resetAnalysis = () => {
-    setUploadedImage(null)
-    setShowResults(false)
-    setIsAnalyzing(false)
-  }
+    setUploadedImage(null);
+    setShowResults(false);
+    setIsAnalyzing(false);
+    setAnalysisResults(null);
+    setSegmentationImage(null);
+  };
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
       {!uploadedImage && (
-        <Card className="border-2 border-dashed border-gray-300 hover:border-blue-400 transition-colors">
+        <Card className="border-2 border-dashed border-gray-300">
           <CardContent className="p-12">
-            <div className="text-center space-y-4" onDragOver={handleDragOver} onDrop={handleDrop}>
+            <div className="text-center space-y-4" onDragOver={handleDragOver}>
               <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
                 <Upload className="h-8 w-8 text-blue-600" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">Upload Skin Lesion Image</h3>
-                <p className="text-gray-600 mt-2">Drag and drop an image here, or click to select</p>
-                <p className="text-sm text-gray-500 mt-1">Supports JPG, PNG, TIFF formats • Max 10MB</p>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Upload Skin Lesion Image
+                </h3>
+                <p className="text-gray-600 mt-2">Click to select an image</p>
+                <p className="text-sm text-gray-500 mt-1">
+                  Supports JPG, PNG, TIFF formats • Max 10MB
+                </p>
               </div>
               <div>
                 <Button asChild className="cursor-pointer">
@@ -103,7 +159,9 @@ export default function ImageAnalysisInterface() {
             <div className="text-center space-y-4">
               <div className="animate-spin mx-auto w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full"></div>
               <h3 className="text-lg font-semibold">Analyzing Image...</h3>
-              <p className="text-gray-600">Processing the skin lesion for melanoma detection</p>
+              <p className="text-gray-600">
+                Processing the skin lesion for melanoma detection
+              </p>
               <Progress value={75} className="w-full max-w-md mx-auto" />
             </div>
           </CardContent>
@@ -127,14 +185,6 @@ export default function ImageAnalysisInterface() {
                   className="w-full h-full object-cover"
                 />
               </div>
-              <div className="mt-4 space-y-2 text-sm text-gray-600">
-                <p>
-                  <strong>Resolution:</strong> 1024x768 px
-                </p>
-                <p>
-                  <strong>File Size:</strong> 2.3 MB
-                </p>
-              </div>
             </CardContent>
           </Card>
 
@@ -148,13 +198,13 @@ export default function ImageAnalysisInterface() {
             <CardContent>
               <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden relative">
                 <img
-                  src={uploadedImage || "/placeholder.svg"}
+                  src={segmentationImage ?? "/placeholder.svg"}
                   alt="Segmented lesion"
                   className="w-full h-full object-cover"
                 />
               </div>
               <div className="mt-4 space-y-2 justify-center flex items-center">
-                <Button  size="sm">
+                <Button size="sm" onClick={handleDownloadSegmentation}>
                   <Download className="h-4 w-4 mr-2" />
                   Download Segmentation
                 </Button>
@@ -173,12 +223,18 @@ export default function ImageAnalysisInterface() {
                 <Badge variant="destructive" className="mb-2">
                   SUSPICIOUS
                 </Badge>
-                <p className="text-lg font-semibold text-orange-800">Possible Melanoma</p>
-                <p className="text-sm text-orange-600 mt-1">Confidence: 78.3%</p>
+                <p className="text-lg font-semibold text-orange-800">
+                  Possible Melanoma
+                </p>
+                <p className="text-sm text-orange-600 mt-1">
+                  Confidence: 78.3%
+                </p>
               </div>
 
               <div className="space-y-2">
-                <h4 className="font-semibold text-sm text-gray-700">Risk Assessment</h4>
+                <h4 className="font-semibold text-sm text-gray-700">
+                  Risk Assessment
+                </h4>
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span>Melanoma Risk:</span>
@@ -186,7 +242,7 @@ export default function ImageAnalysisInterface() {
                   </div>
                   <div className="flex justify-between text-sm">
                     <span>Benign Probability:</span>
-                    <span className="font-medium">21.7%</span>
+                    <span className="font-medium">{analysisResults?.mel}</span>
                   </div>
                 </div>
               </div>
@@ -202,5 +258,5 @@ export default function ImageAnalysisInterface() {
         </div>
       )}
     </div>
-  )
+  );
 }
