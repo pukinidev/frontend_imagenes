@@ -103,7 +103,7 @@ export default function ImageAnalysisInterface() {
             <div className="text-center space-y-4">
               <div className="animate-spin mx-auto w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full"></div>
               <h3 className="text-lg font-semibold">Analyzing Image...</h3>
-              <p className="text-gray-600">AI is processing the skin lesion for melanoma detection</p>
+              <p className="text-gray-600">processing the skin lesion for melanoma detection</p>
               <Progress value={75} className="w-full max-w-md mx-auto" />
             </div>
           </CardContent>
