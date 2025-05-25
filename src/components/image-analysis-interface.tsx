@@ -35,7 +35,7 @@ export default function ImageAnalysisInterface() {
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     const file = event.target.files?.[0];
-    if (file && file.type.startsWith("image/")) {
+    if (file?.type?.startsWith("image/")) {
       const formData = new FormData();
       formData.append("file", file);
       setIsAnalyzing(true);
