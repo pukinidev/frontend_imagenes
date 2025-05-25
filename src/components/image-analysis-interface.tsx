@@ -65,7 +65,6 @@ export default function ImageAnalysisInterface() {
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
-      {/* Upload Area */}
       {!uploadedImage && (
         <Card className="border-2 border-dashed border-gray-300 hover:border-blue-400 transition-colors">
           <CardContent className="p-12">
@@ -98,7 +97,6 @@ export default function ImageAnalysisInterface() {
         </Card>
       )}
 
-      {/* Analysis Progress */}
       {isAnalyzing && (
         <Card>
           <CardContent className="p-6">
@@ -112,10 +110,8 @@ export default function ImageAnalysisInterface() {
         </Card>
       )}
 
-      {/* Results Display */}
       {uploadedImage && showResults && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Original Image */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -145,7 +141,6 @@ export default function ImageAnalysisInterface() {
             </CardContent>
           </Card>
 
-          {/* Segmentation Result */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -160,15 +155,10 @@ export default function ImageAnalysisInterface() {
                   alt="Segmented lesion"
                   className="w-full h-full object-cover"
                 />
-                {/* Overlay to simulate segmentation */}
-                <div className="absolute inset-0 bg-red-500 bg-opacity-20 rounded-lg">
-                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-32 h-24 border-2 border-red-500 rounded-full bg-red-500 bg-opacity-30"></div>
-                </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Analysis Results */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -177,7 +167,6 @@ export default function ImageAnalysisInterface() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Main Classification */}
               <div className="text-center p-4 bg-orange-50 rounded-lg border border-orange-200">
                 <Badge variant="destructive" className="mb-2">
                   SUSPICIOUS
@@ -186,7 +175,6 @@ export default function ImageAnalysisInterface() {
                 <p className="text-sm text-orange-600 mt-1">Confidence: 78.3%</p>
               </div>
 
-              {/* Risk Assessment */}
               <div className="space-y-2">
                 <h4 className="font-semibold text-sm text-gray-700">Risk Assessment</h4>
                 <div className="space-y-2">
@@ -201,12 +189,7 @@ export default function ImageAnalysisInterface() {
                 </div>
               </div>
 
-              {/* Action Buttons */}
-              <div className="flex gap-2 pt-2">
-                <Button size="sm" className="flex-1">
-                  <Download className="h-4 w-4 mr-1" />
-                  Export Report
-                </Button>
+              <div className="flex gap-1 justify-end">
                 <Button size="sm" variant="outline" onClick={resetAnalysis}>
                   <RotateCcw className="h-4 w-4 mr-1" />
                   New Analysis
